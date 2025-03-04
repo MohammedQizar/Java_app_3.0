@@ -79,12 +79,12 @@ stage('Deploy to Tomcat') {
 
             // Step 1: Copy the WAR file into Tomcat's webapps directory using SSH
             sh """
-                ssh -i /path/to/private-key ec2-user@19.33.23.123 'docker cp ${warFile} ${tomcatContainerName}:/usr/local/tomcat/webapps/'
+                ssh -i C:\Users\admin\Downloads\ ec2-user@52.53.248.184 'docker cp ${warFile} ${tomcatContainerName}:/usr/local/tomcat/webapps/'
             """
             
             // Step 2: Restart Tomcat to deploy the WAR using SSH
             sh """
-                ssh -i /path/to/private-key ec2-user@19.33.23.123 'docker exec ${tomcatContainerName} /bin/bash -c "catalina.sh stop && catalina.sh start"'
+                ssh -i C:\Users\admin\Downloads\ ec2-user@52.53.248.184 'docker exec ${tomcatContainerName} /bin/bash -c "catalina.sh stop && catalina.sh start"'
             """
         }
     }
