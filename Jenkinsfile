@@ -9,6 +9,8 @@ pipeline {
         string(name: 'ImageName', description: "name of the docker build", defaultValue: 'javapp')
         string(name: 'ImageTag', description: "tag of the docker build", defaultValue: 'v1')
         string(name: 'DockerHubUser', description: "name of the Application", defaultValue: 'mohammedqizar')
+        string(name: 'JarFilePath', description: "Path to the JAR file", defaultValue: '/var/lib/jenkins/workspace/ci-cd demo/target/kubernetes-configmap-reload-0.0.1-SNAPSHOT.jar')
+        string(name: 'TomcatContainerName', description: "Name of the Tomcat Docker container", defaultValue: 'tomcat-container')
     }
 
     stages {
@@ -64,6 +66,26 @@ pipeline {
             steps {
                 script {
                     dockerBuild("${params.ImageName}", "${params.ImageTag}", "${params.DockerHubUser}")
+                }
+            }
+        }
+ stage('Deploy to Tomcat') {
+            when { expression { params.action == 'create' } }
+            steps {
+                script {
+                    // Assuming Tomcat is running in Docker container and WAR file is built
+                    def warFile = "${params.JarFilePath}"
+                    def tomcatContainerName = "${params.TomcatContainerName}"
+                    
+                    // Step 1: Copy the WAR file into Tomcat's webapps directory
+                    sh """
+                        docker cp ${warFile} ${tomcatContainerName}:/usr/local/tomcat/webapps/
+                    """
+                    
+                    // Step 2: Restart Tomcat to deploy the WAR (optional)
+                    sh """
+                        docker exec ${tomcatContainerName} /bin/bash -c "catalina.sh stop && catalina.sh start"
+                    """
                 }
             }
         }
