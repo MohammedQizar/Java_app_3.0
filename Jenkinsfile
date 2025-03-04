@@ -74,21 +74,25 @@ stage('Deploy to Tomcat') {
     steps {
         script {
             // Assuming Tomcat is running in Docker container and WAR file is built
-            def warFile = "${params.JarFilePath}"
+            def warFile = "${params.WarFilePath}"
             def tomcatContainerName = "${params.TomcatContainerName}"
 
-            // Step 1: Copy the WAR file into Tomcat's webapps directory using SSH
-            sh """
-                ssh -i ${SSH_PRIVATE_KEY} ec2-user@52.53.248.184 'docker cp ${warFile} ${tomcatContainerName}:/usr/local/tomcat/webapps/'
-            """
-            
-            // Step 2: Restart Tomcat to deploy the WAR using SSH
-            sh """
-                ssh -i ${SSH_PRIVATE_KEY} ec2-user@52.53.248.184 'docker exec ${tomcatContainerName} /bin/bash -c "catalina.sh stop && catalina.sh start"'
-            """
+            // Use Jenkins credentials to securely inject the private key
+            withCredentials([sshUserPrivateKey(credentialsId: 'my-ec2-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY')]) {
+                // Now SSH_PRIVATE_KEY is available and can be used in the script
+                sh """
+                    ssh -i ${SSH_PRIVATE_KEY} ec2-user@52.53.248.184 'docker cp ${warFile} ${tomcatContainerName}:/usr/local/tomcat/webapps/'
+                """
+                
+                // Restart Tomcat to deploy the WAR using SSH
+                sh """
+                    ssh -i ${SSH_PRIVATE_KEY} ec2-user@52.53.248.184 'docker exec ${tomcatContainerName} /bin/bash -c "catalina.sh stop && catalina.sh start"'
+                """
+            }
         }
     }
 }
+
 
 
 
