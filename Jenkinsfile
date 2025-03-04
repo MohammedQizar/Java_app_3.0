@@ -69,25 +69,28 @@ pipeline {
                 }
             }
         }
- stage('Deploy to Tomcat') {
-            when { expression { params.action == 'create' } }
-            steps {
-                script {
-                    // Assuming Tomcat is running in Docker container and WAR file is built
-                    def warFile = "${params.JarFilePath}"
-                    def tomcatContainerName = "${params.TomcatContainerName}"
-                    
-                    // Step 1: Copy the WAR file into Tomcat's webapps directory
-                    sh """
-                        docker cp ${warFile} ${tomcatContainerName}:/usr/local/tomcat/webapps/
-                    """
-                    
-                    // Step 2: Restart Tomcat to deploy the WAR (optional)
-                    sh """
-                        docker exec ${tomcatContainerName} /bin/bash -c "catalina.sh stop && catalina.sh start"
-                    """
-                }
-            }
+stage('Deploy to Tomcat') {
+    when { expression { params.action == 'create' } }
+    steps {
+        script {
+            // Assuming Tomcat is running in Docker container and WAR file is built
+            def warFile = "${params.JarFilePath}"
+            def tomcatContainerName = "${params.TomcatContainerName}"
+
+            // Step 1: Copy the WAR file into Tomcat's webapps directory using SSH
+            sh """
+                ssh -i /path/to/private-key ec2-user@19.33.23.123 'docker cp ${warFile} ${tomcatContainerName}:/usr/local/tomcat/webapps/'
+            """
+            
+            // Step 2: Restart Tomcat to deploy the WAR using SSH
+            sh """
+                ssh -i /path/to/private-key ec2-user@19.33.23.123 'docker exec ${tomcatContainerName} /bin/bash -c "catalina.sh stop && catalina.sh start"'
+            """
         }
+    }
+}
+
+
+
     }
 }
