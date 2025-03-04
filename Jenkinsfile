@@ -9,7 +9,7 @@ pipeline {
         string(name: 'ImageName', description: "name of the docker build", defaultValue: 'javapp')
         string(name: 'ImageTag', description: "tag of the docker build", defaultValue: 'v1')
         string(name: 'DockerHubUser', description: "name of the Application", defaultValue: 'mohammedqizar')
-        string(name: 'JarFilePath', description: "Path to the JAR file", defaultValue: '/var/lib/jenkins/workspace/ci-cd demo/target/kubernetes-configmap-reload-0.0.1-SNAPSHOT.jar')
+        string(name: 'JarFilePath', description: "Path to the JAR file", defaultValue: 'target/kubernetes-configmap-reload-0.0.1-SNAPSHOT.jar')
         string(name: 'TomcatContainerName', description: "Name of the Tomcat Docker container", defaultValue: 'tomcat-container')
     }
 
