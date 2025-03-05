@@ -82,7 +82,7 @@ pipeline {
             steps {
                 script {
                     // Deploy WAR to Tomcat container running on port 8081
-                    deployWarToTomcat("${params.JarFilePath}", "${params.TomcatContainerName}", "${params.TomcatUser}", "${params.TomcatPassword}")
+                    deployWarToTomcat("${params.WarFilePath}", "${params.TomcatContainerName}", "${params.TomcatUser}", "${params.TomcatPassword}")
                 }
             }
         }
