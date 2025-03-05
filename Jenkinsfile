@@ -11,6 +11,13 @@ pipeline {
         string(name: 'DockerHubUser', description: "name of the Application", defaultValue: 'mohammedqizar')
         string(name: 'JarFilePath', description: "Path to the WAR file", defaultValue: 'target/kubernetes-configmap-reload-0.0.1-SNAPSHOT.war')
         string(name: 'TomcatContainerName', description: "Name of the Tomcat Docker container", defaultValue: 'tomcat-container')
+        string(name: 'TomcatHost', description: "Tomcat server host address", defaultValue: '18.144.1.181')
+        string(name: 'TomcatPort', description: "Tomcat server port", defaultValue: '8081') // Port is now 8081 for Tomcat
+        string(name: 'TomcatUser', description: "Tomcat username", defaultValue: 'admin')
+        string(name: 'TomcatPassword', description: "Tomcat password", defaultValue: 'admin')
+    }
+ environment {
+        TOMCAT_URL = "http://${params.TomcatHost}:${params.TomcatPort}/manager/text/deploy"
     }
 
     stages {
@@ -69,32 +76,25 @@ pipeline {
                 }
             }
         }
-stage('Deploy to Tomcat') {
-    when { expression { params.action == 'create' } }
-    steps {
-        script {
-            // Assuming Tomcat is running in Docker container and WAR file is built
-            def warFile = "${params.WarFilePath}"
-            def tomcatContainerName = "${params.TomcatContainerName}"
 
-            // Use Jenkins credentials to securely inject the private key
-            withCredentials([sshUserPrivateKey(credentialsId: 'my-ec2-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY')]) {
-                // Now SSH_PRIVATE_KEY is available and can be used in the script
-                sh """
-                    ssh -i ${SSH_PRIVATE_KEY} ec2-user@52.53.248.184 'docker cp ${warFile} ${tomcatContainerName}:/usr/local/tomcat/webapps/'
-                """
-                
-                // Restart Tomcat to deploy the WAR using SSH
-                sh """
-                    ssh -i ${SSH_PRIVATE_KEY} ec2-user@52.53.248.184 'docker exec ${tomcatContainerName} /bin/bash -c "catalina.sh stop && catalina.sh start"'
-                """
+ stage('Deploy to Tomcat') {
+            when { expression { params.action == 'create' } }
+            steps {
+                script {
+                    // Deploy WAR to Tomcat container running on port 8081
+                    deployWarToTomcat("${params.JarFilePath}", "${params.TomcatContainerName}", "${params.TomcatUser}", "${params.TomcatPassword}")
+                }
             }
         }
-    }
-}
-
 
 
 
     }
+}
+def deployWarToTomcat(warFile, tomcatContainerName, tomcatUser, tomcatPassword) {
+    // Assuming you have the Docker container running with Tomcat on port 8081
+    sh """
+        docker cp ${warFile} ${tomcatContainerName}:/usr/local/tomcat/webapps/
+        docker exec ${tomcatContainerName} /bin/bash -c "curl -u ${tomcatUser}:${tomcatPassword} -T /usr/local/tomcat/webapps/${warFile} ${env.TOMCAT_URL}?path=/$(basename ${warFile} .war)"
+    """
 }
