@@ -12,7 +12,7 @@ pipeline {
         string(name: 'WarFilePath', description: "Path to the WAR file", defaultValue: 'target/kubernetes-configmap-reload-0.0.1-SNAPSHOT.war')
         string(name: 'TomcatContainerName', description: "Name of the Tomcat Docker container", defaultValue: 'tomcat-container')
         string(name: 'TomcatHost', description: "Tomcat server host address", defaultValue: '18.144.1.181')
-        string(name: 'TomcatPort', description: "Tomcat server port", defaultValue: '8081') // Port is now 8081 for Tomcat
+        string(name: 'TomcatPort', description: "Tomcat server port", defaultValue: '8080') // Port is now 8081 for Tomcat
         string(name: 'TomcatUser', description: "Tomcat username", defaultValue: 'admin')
         string(name: 'TomcatPassword', description: "Tomcat password", defaultValue: 'admin')
     }
