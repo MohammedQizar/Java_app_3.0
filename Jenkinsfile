@@ -95,7 +95,14 @@ def deployWarToTomcat(warFile, tomcatContainerName, tomcatUser, tomcatPassword) 
     // Ensure the WAR file is copied to the Tomcat container
     sh """
         WAR_FILE_NAME=\$(basename ${warFile})
+        
+        # Copy WAR file to Tomcat container
         docker cp ${warFile} ${tomcatContainerName}:/usr/local/tomcat/webapps/
+        
+        # Check if WAR file exists in the container
+        docker exec ${tomcatContainerName} /bin/bash -c "if [ -f /usr/local/tomcat/webapps/\${WAR_FILE_NAME} ]; then echo 'File copied successfully'; else echo 'File copy failed'; exit 1; fi"
+        
+        # Deploy the WAR file using curl
         docker exec ${tomcatContainerName} /bin/bash -c "curl -u ${tomcatUser}:${tomcatPassword} -T /usr/local/tomcat/webapps/\${WAR_FILE_NAME} ${env.TOMCAT_URL}?path=/\${WAR_FILE_NAME%.*}"
     """
 }
