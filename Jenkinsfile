@@ -92,9 +92,10 @@ pipeline {
     }
 }
 def deployWarToTomcat(warFile, tomcatContainerName, tomcatUser, tomcatPassword) {
-    // Assuming you have the Docker container running with Tomcat on port 8081
+    // Ensure the WAR file is copied to the Tomcat container
     sh """
+        WAR_FILE_NAME=\$(basename ${warFile})
         docker cp ${warFile} ${tomcatContainerName}:/usr/local/tomcat/webapps/
-        docker exec ${tomcatContainerName} /bin/bash -c "curl -u ${tomcatUser}:${tomcatPassword} -T /usr/local/tomcat/webapps/${warFile} ${env.TOMCAT_URL}?path=/$(basename ${warFile} .war)"
+        docker exec ${tomcatContainerName} /bin/bash -c "curl -u ${tomcatUser}:${tomcatPassword} -T /usr/local/tomcat/webapps/\${WAR_FILE_NAME} ${env.TOMCAT_URL}?path=/\${WAR_FILE_NAME%.*}"
     """
 }
